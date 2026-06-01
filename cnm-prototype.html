@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CreativesNearMe — Prototype</title>
+<style>
+:root {
+  --ink:#111; --soft:#f7f5f1; --white:#fff; --accent:#e84f2b;
+  --blue:#3a5fff; --green:#1db954; --mid:#666; --light:#999;
+  --border:#e4e0da; --shadow:0 2px 16px rgba(0,0,0,0.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--soft);color:var(--ink);min-height:100vh;}
+
+/* ── LAYOUT ── */
+.shell{display:flex;flex-direction:column;height:100vh;}
+
+/* NAV */
+nav{display:flex;align-items:center;gap:1rem;padding:.9rem 1.5rem;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:200;}
+.logo{font-weight:900;font-size:1rem;letter-spacing:-.5px;margin-right:.5rem;white-space:nowrap;}
+.logo span{color:var(--accent);}
+.nav-loc{display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--mid);background:var(--soft);border:1px solid var(--border);padding:.35rem .8rem;border-radius:2rem;cursor:pointer;white-space:nowrap;}
+.nav-loc select{border:none;background:transparent;font-size:.82rem;color:var(--ink);cursor:pointer;outline:none;}
+.nav-search{flex:1;position:relative;max-width:400px;}
+.nav-search input{width:100%;padding:.45rem 1rem .45rem 2.2rem;border:1.5px solid var(--border);border-radius:2rem;font-size:.85rem;outline:none;transition:border-color .15s;}
+.nav-search input:focus{border-color:var(--accent);}
+.nav-search .icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--light);font-size:.9rem;}
+.nav-right{display:flex;gap:.6rem;align-items:center;margin-left:auto;}
+.btn-sm{font-size:.8rem;font-weight:700;padding:.38rem .9rem;border-radius:2rem;border:none;cursor:pointer;transition:transform .15s;}
+.btn-ink{background:var(--ink);color:#fff;}
+.btn-outline-sm{background:transparent;border:1.5px solid var(--border);color:var(--ink);}
+
+/* MAIN SPLIT */
+.main{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);background:var(--white);overflow-y:auto;padding:1rem 0;}
+.sidebar-section{padding:.4rem 1rem .2rem;font-size:.65rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--light);}
+.cat-item{display:flex;align-items:center;gap:.6rem;padding:.55rem 1rem;font-size:.88rem;cursor:pointer;border-radius:0;transition:background .1s;color:var(--ink);position:relative;}
+.cat-item:hover{background:var(--soft);}
+.cat-item.active{background:#fff5f3;color:var(--accent);font-weight:700;}
+.cat-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);border-radius:0 2px 2px 0;}
+.cat-item .count{margin-left:auto;font-size:.72rem;color:var(--light);background:var(--soft);padding:.1rem .45rem;border-radius:1rem;}
+.cat-item.soon{opacity:.45;cursor:default;}
+.soon-badge{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;background:#eee;color:#999;padding:.1rem .4rem;border-radius:.4rem;margin-left:auto;}
+
+/* FEED */
+.feed{flex:1;overflow-y:auto;padding:1.2rem;}
+.feed-header{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap;}
+.feed-title{font-size:1.1rem;font-weight:900;letter-spacing:-.3px;}
+.feed-count{font-size:.8rem;color:var(--light);}
+.feed-actions{margin-left:auto;display:flex;gap:.6rem;}
+.filter-row{display:flex;gap:.5rem;margin-bottom:1.2rem;flex-wrap:wrap;}
+.filter-pill{font-size:.78rem;padding:.3rem .8rem;border-radius:2rem;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-weight:600;transition:border-color .12s,background .12s;}
+.filter-pill:hover{border-color:var(--accent);}
+.filter-pill.on{border-color:var(--accent);background:#fff5f3;color:var(--accent);}
+
+/* NEW QUESTION BOX */
+.ask-box{background:var(--white);border:1.5px solid var(--border);border-radius:1rem;padding:1rem 1.2rem;margin-bottom:1.2rem;display:flex;gap:.8rem;align-items:flex-start;}
+.ask-av{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;flex-shrink:0;}
+.ask-input{flex:1;border:none;outline:none;font-size:.9rem;color:var(--ink);background:transparent;resize:none;font-family:inherit;line-height:1.5;}
+.ask-input::placeholder{color:var(--light);}
+.ask-footer{display:flex;gap:.5rem;margin-top:.7rem;align-items:center;flex-wrap:wrap;}
+.ask-footer select{font-size:.78rem;border:1.5px solid var(--border);border-radius:2rem;padding:.3rem .7rem;outline:none;background:var(--white);cursor:pointer;}
+.ask-submit{margin-left:auto;font-size:.82rem;font-weight:700;background:var(--accent);color:#fff;border:none;border-radius:2rem;padding:.4rem 1.1rem;cursor:pointer;transition:transform .15s;}
+.ask-submit:hover{transform:translateY(-1px);}
+
+/* THREAD CARD */
+.thread-card{background:var(--white);border:1px solid var(--border);border-radius:1rem;margin-bottom:.9rem;overflow:hidden;transition:box-shadow .15s;}
+.thread-card:hover{box-shadow:var(--shadow);}
+.thread-card.open{box-shadow:var(--shadow);}
+.tc-head{padding:1rem 1.2rem;cursor:pointer;display:flex;gap:.8rem;align-items:flex-start;}
+.tc-body-wrap{padding:0 1.2rem;}
+.tc-cat{font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--mid);background:var(--soft);padding:.2rem .55rem;border-radius:.4rem;white-space:nowrap;margin-top:2px;flex-shrink:0;}
+.tc-q{font-weight:800;font-size:.95rem;flex:1;line-height:1.4;}
+.tc-meta{font-size:.75rem;color:var(--light);margin-top:.25rem;}
+.tc-meta strong{color:var(--mid);}
+.tc-stats{display:flex;gap:.8rem;margin-top:.5rem;font-size:.75rem;color:var(--light);}
+.tc-stat{display:flex;align-items:center;gap:.25rem;}
+
+/* REPLIES */
+.replies{border-top:1px solid var(--border);padding:.8rem 0;}
+.reply{display:flex;gap:.8rem;padding:.7rem 0;border-bottom:1px solid #f5f3ef;}
+.reply:last-child{border-bottom:none;}
+.r-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:#fff;}
+.r-body{flex:1;}
+.r-name{font-size:.83rem;font-weight:800;}
+.r-name a{font-size:.75rem;font-weight:600;color:var(--blue);text-decoration:none;margin-left:.4rem;}
+.r-name a:hover{text-decoration:underline;}
+.r-text{font-size:.88rem;color:#333;margin-top:.15rem;line-height:1.6;}
+.r-tags{display:flex;gap:.35rem;margin-top:.4rem;flex-wrap:wrap;}
+.r-tag{font-size:.68rem;background:var(--soft);padding:.15rem .5rem;border-radius:1rem;color:var(--mid);}
+.r-actions{display:flex;gap:.8rem;margin-top:.5rem;}
+.r-action{font-size:.75rem;color:var(--light);cursor:pointer;transition:color .15s;}
+.r-action:hover{color:var(--accent);}
+
+/* CONTEXTUAL ADS */
+.ad-strip{background:#fffbf0;border:1px solid #ffe49e;border-radius:.8rem;padding:.8rem 1rem;margin:.4rem 0 .8rem;display:flex;gap:.6rem;align-items:flex-start;flex-wrap:wrap;}
+.ad-label{font-size:.62rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#b08800;background:#ffe49e;padding:.15rem .45rem;border-radius:.35rem;white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:1px;}
+.ad-chips{display:flex;gap:.5rem;flex-wrap:wrap;flex:1;}
+.ad-chip{font-size:.78rem;font-weight:600;background:var(--white);border:1px solid var(--border);padding:.25rem .7rem;border-radius:2rem;color:var(--ink);cursor:pointer;text-decoration:none;transition:border-color .12s;}
+.ad-chip:hover{border-color:var(--accent);color:var(--accent);}
+.ad-note{font-size:.68rem;color:var(--light);width:100%;margin-top:.15rem;}
+
+/* ADD REPLY */
+.add-reply{background:var(--soft);border-radius:.8rem;padding:.8rem 1rem;margin-bottom:.8rem;display:flex;gap:.7rem;align-items:flex-start;}
+.add-reply textarea{flex:1;border:1.5px solid var(--border);border-radius:.6rem;padding:.6rem .8rem;font-size:.85rem;font-family:inherit;resize:none;outline:none;transition:border-color .15s;background:var(--white);}
+.add-reply textarea:focus{border-color:var(--accent);}
+.add-reply button{font-size:.8rem;font-weight:700;background:var(--accent);color:#fff;border:none;border-radius:2rem;padding:.5rem 1rem;cursor:pointer;align-self:flex-end;transition:transform .15s;}
+.add-reply button:hover{transform:translateY(-1px);}
+
+/* PANEL: DIRECTORY / DETAIL */
+.panel{width:300px;flex-shrink:0;border-left:1px solid var(--border);background:var(--white);overflow-y:auto;padding:1rem;}
+.panel-title{font-size:.8rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--light);margin-bottom:1rem;}
+.profile-card{border:1px solid var(--border);border-radius:.9rem;padding:1rem;margin-bottom:.8rem;text-align:center;}
+.pc-av{width:44px;height:44px;border-radius:50%;margin:0 auto .6rem;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:#fff;}
+.pc-name{font-weight:800;font-size:.9rem;}
+.pc-handle{font-size:.72rem;color:var(--light);margin-bottom:.5rem;}
+.pc-skills{display:flex;flex-wrap:wrap;gap:.3rem;justify-content:center;margin-bottom:.5rem;}
+.pc-skill{font-size:.68rem;background:var(--soft);padding:.15rem .5rem;border-radius:1rem;}
+.pc-deal{font-size:.74rem;background:#f0fff4;color:#187a3a;border:1px solid #b7eecb;border-radius:.5rem;padding:.3rem .5rem;margin-bottom:.6rem;}
+.pc-btn{font-size:.76rem;font-weight:700;background:var(--ink);color:#fff;border:none;border-radius:2rem;padding:.38rem .9rem;cursor:pointer;width:100%;}
+.pc-btn:hover{background:#333;}
+.pc-ans{font-size:.68rem;color:var(--light);margin-top:.4rem;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:3rem 1rem;color:var(--light);}
+.empty .big{font-size:2.5rem;margin-bottom:.5rem;}
+.empty p{font-size:.9rem;}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;padding:.7rem 1.2rem;border-radius:.8rem;font-size:.85rem;font-weight:600;z-index:999;transform:translateY(100px);opacity:0;transition:all .3s;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#ddd;border-radius:10px;}
+
+@media(max-width:900px){.panel{display:none;}}
+@media(max-width:640px){.sidebar{display:none;}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Creatives<span>NearMe</span></div>
+  <div class="nav-loc">
+    📍
+    <select id="locSelect" onchange="changeCity(this.value)">
+      <option>London</option><option>Manchester</option><option>Birmingham</option>
+      <option>Bristol</option><option>Leeds</option><option>Edinburgh</option>
+      <option>Glasgow</option><option>Liverpool</option><option>Sheffield</option>
+    </select>
+  </div>
+  <div class="nav-search">
+    <span class="icon">🔍</span>
+    <input type="text" placeholder="Search questions…" oninput="filterSearch(this.value)"/>
+  </div>
+  <div class="nav-right">
+    <button class="btn-sm btn-outline-sm">Sign in</button>
+    <button class="btn-sm btn-ink">Join free</button>
+  </div>
+</nav>
+
+<div class="main">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">Active now</div>
+  <div id="catList"></div>
+  <div class="sidebar-section" style="margin-top:.5rem">Coming soon</div>
+  <div class="cat-item soon">🖨️ 3D Printing <span class="soon-badge">Soon</span></div>
+  <div class="cat-item soon">🪵 Woodwork <span class="soon-badge">Soon</span></div>
+  <div class="cat-item soon">🎨 Visual Art <span class="soon-badge">Soon</span></div>
+  <div class="cat-item soon">🧵 Textiles <span class="soon-badge">Soon</span></div>
+  <div class="cat-item soon">📷 Photography <span class="soon-badge">Soon</span></div>
+  <div class="cat-item soon">✍️ Writing <span class="soon-badge">Soon</span></div>
+</aside>
+
+<!-- FEED -->
+<main class="feed" id="feed">
+  <div class="feed-header">
+    <div>
+      <div class="feed-title" id="feedTitle">🎵 Music Making</div>
+      <div class="feed-count" id="feedCount"></div>
+    </div>
+    <div class="feed-actions">
+      <button class="btn-sm btn-outline-sm" onclick="toggleSortMode()">Sort: <span id="sortLabel">Recent</span></button>
+    </div>
+  </div>
+  <div class="filter-row" id="filterRow"></div>
+  <div class="ask-box">
+    <div class="ask-av">YOU</div>
+    <div style="flex:1">
+      <textarea class="ask-input" id="askInput" rows="2" placeholder="Ask the community something…"></textarea>
+      <div class="ask-footer">
+        <select id="askCity">
+          <option>London</option><option>Manchester</option><option>Birmingham</option>
+          <option>Bristol</option><option>Leeds</option><option>Edinburgh</option>
+        </select>
+        <button class="ask-submit" onclick="postQuestion()">Post question →</button>
+      </div>
+    </div>
+  </div>
+  <div id="threadList"></div>
+</main>
+
+<!-- PANEL: DIRECTORY -->
+<aside class="panel">
+  <div class="panel-title">Directory — <span id="panelCity">London</span></div>
+  <div id="directoryList"></div>
+</aside>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+
+const CATS = [
+  { id:'music',   label:'🎵 Music Making',      count:24 },
+  { id:'ai',      label:'🤖 AI & Production',   count:17 },
+  { id:'bands',   label:'🎸 Bands & Rehearsal', count:11 },
+];
+
+const ADS = {
+  music: [
+    { label:'🎛️ Gear hire — SW London', url:'#' },
+    { label:'🎙️ Recording studios nearby', url:'#' },
+    { label:'📀 Mastering services', url:'#' },
+  ],
+  ai: [
+    { label:'🤖 Ableton lessons', url:'#' },
+    { label:'🎹 Sample packs — free trial', url:'#' },
+    { label:'🔌 Plugin bundles — 20% off', url:'#' },
+  ],
+  bands: [
+    { label:'🎸 Rehearsal rooms near you', url:'#' },
+    { label:'🔊 PA hire', url:'#' },
+    { label:'🎙️ Recording studios', url:'#' },
+    { label:'🥁 Backline hire', url:'#' },
+  ],
+};
+
+const FILTERS = {
+  music:  ['All','Questions','How-to','Gear','Collab','Hire'],
+  ai:     ['All','Questions','Tools','Tutorials','Collab'],
+  bands:  ['All','Questions','Spaces','Hire','Collab','Gear'],
+};
+
+const AVATARS = ['#e84f2b','#3a5fff','#1db954','#9b59b6','#e67e22','#16a085','#c0392b','#2980b9'];
+function av(name){ let h=0; for(let c of name) h=(h*31+c.charCodeAt(0))&0xffff; return AVATARS[h%AVATARS.length]; }
+function initials(name){ return name.split(/[\s_]+/).map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+
+const THREADS = {
+  music: [
+    { id:1, q:'Best way to layer synths in Ableton without muddying the low end?', user:'kiran_makes', city:'Manchester', time:'2h ago', tags:['Gear','How-to'],
+      replies:[
+        { user:'jakek_music', text:'High-pass filter everything below 200Hz on any synth that isn't your bass or kick anchor. Spectrum analyser is your friend here — Ableton's own is underrated.', tags:['Ableton','EQ'] },
+        { user:'studioben', text:'Also check for phase issues if you're stacking identical waveforms. Slight detune + stereo spread does more than adding layers ever will.', tags:['Mixing','Tips'] },
+      ]},
+    { id:2, q:'Anyone know a good mastering engineer who works remotely? Budget around £80–120 per track.', user:'louisa_sw', city:'Bristol', time:'4h ago', tags:['Hire'],
+      replies:[
+        { user:'mattd_audio', text:'Dan at Loud & Clear is good in that range — mastered two EPs for me, very communicative. DM me for his details.', tags:['Mastering'] },
+      ]},
+    { id:3, q:'Is Sonic Pi worth learning for someone who already knows Max/MSP?', user:'synthwitch', city:'Edinburgh', time:'1d ago', tags:['How-to','Tools'],
+      replies:[
+        { user:'codebeats', text:'Different vibe entirely — Sonic Pi is simpler, live-performance focused. If you like coding music at gigs it's fun. For deep patching, Max still wins.', tags:['Sonic Pi','Max'] },
+        { user:'livecoder_uk', text:'The community around Sonic Pi is great for beginners too. Worth an afternoon to try it before committing.', tags:['Community'] },
+      ]},
+  ],
+  ai: [
+    { id:4, q:'Which AI music tools are actually useful vs hype in 2026?', user:'aimusic_curious', city:'London', time:'3h ago', tags:['Tools','Questions'],
+      replies:[
+        { user:'prodgeek_ldn', text:'Udio and Suno are genuinely good for reference tracks and sketch ideas. AIVA for orchestral sketches. Most else is hype. Nothing replaces knowing your craft though.', tags:['AI Tools'] },
+      ]},
+    { id:5, q:'Has anyone used AI to generate stems for remixing? Curious about legality.', user:'remixer_brum', city:'Birmingham', time:'6h ago', tags:['Questions','Tools'],
+      replies:[]},
+  ],
+  bands: [
+    { id:6, q:'Anyone know a good rehearsal space in Putney? 4-piece, Thursdays, need decent PA.', user:'mattd_sw15', city:'London', time:'2h ago', tags:['Spaces','Questions'],
+      replies:[
+        { user:'jakek_music', text:'Roar Studios on Putney Bridge Road — solid rooms, full PA, online booking. Used them for 2 years. £14/hr off-peak.', tags:['Putney','Rehearsal'] },
+        { user:'studioben', text:'The Lots Road Arts is worth a look too — more underground feel, slightly cheaper. Book early, fills up.', tags:['SW London'] },
+      ]},
+    { id:7, q:'Looking for a bassist to dep on a gig in Leeds, 14th June. Paying, funk/soul.', user:'soulband_leeds', city:'Leeds', time:'5h ago', tags:['Hire','Collab'],
+      replies:[
+        { user:'bass_dan_ls', text:'I might be free — sending you a DM now.', tags:['Bass'] },
+      ]},
+  ],
+};
+
+const DIRECTORY = {
+  music: [
+    { name:'Jake K.', handle:'jakek_music', city:'London SE1', skills:['Live sound','PA hire','FOH'], deal:'10% off first gig', ans:47, color:'#3a5fff' },
+    { name:'Studio Ben', handle:'studioben', city:'SW London', skills:['Recording','Mixing','Mastering'], deal:'Free hour with 4hr booking', ans:31, color:'#e84f2b' },
+    { name:'Louisa S.', handle:'louisa_sw', city:'Bristol', skills:['Session keys','Songwriting'], deal:'Free 30-min consultation', ans:12, color:'#9b59b6' },
+  ],
+  ai: [
+    { name:'ProdGeek', handle:'prodgeek_ldn', city:'London N1', skills:['Ableton','Sound design','AI tools'], deal:'Free 1hr Ableton session', ans:28, color:'#1db954' },
+    { name:'CodeBeats', handle:'codebeats', city:'Edinburgh', skills:['Sonic Pi','Live coding','Max/MSP'], deal:'Workshop tickets — half price', ans:19, color:'#16a085' },
+  ],
+  bands: [
+    { name:'Jake K.', handle:'jakek_music', city:'London SE1', skills:['Live sound','PA hire'], deal:'10% off first gig', ans:47, color:'#3a5fff' },
+    { name:'Bass Dan', handle:'bass_dan_ls', city:'Leeds', skills:['Session bass','Dep gigs','Funk/Soul'], deal:'First dep free for originals', ans:9, color:'#e67e22' },
+  ],
+};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let currentCat = 'music';
+let currentFilter = 'All';
+let currentCity = 'London';
+let openThread = null;
+let sortRecent = true;
+let searchTerm = '';
+let nextId = 100;
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderSidebar();
+  renderFeed();
+  renderDirectory();
+});
+
+// ── SIDEBAR ──────────────────────────────────────────────────────────────
+function renderSidebar(){
+  const el = document.getElementById('catList');
+  el.innerHTML = CATS.map(c=>`
+    <div class="cat-item${c.id===currentCat?' active':''}" onclick="selectCat('${c.id}')">
+      ${c.label} <span class="count">${(THREADS[c.id]||[]).length}</span>
+    </div>`).join('');
+}
+
+function selectCat(id){
+  currentCat = id;
+  currentFilter = 'All';
+  openThread = null;
+  renderSidebar();
+  renderFeed();
+  renderDirectory();
+}
+
+// ── CITY ─────────────────────────────────────────────────────────────────
+function changeCity(city){
+  currentCity = city;
+  document.getElementById('panelCity').textContent = city;
+  document.getElementById('askCity').value = city;
+}
+
+// ── FEED ─────────────────────────────────────────────────────────────────
+function renderFeed(){
+  const cat = CATS.find(c=>c.id===currentCat);
+  document.getElementById('feedTitle').textContent = cat.label;
+
+  // filters
+  const filters = FILTERS[currentCat]||['All'];
+  document.getElementById('filterRow').innerHTML = filters.map(f=>`
+    <div class="filter-pill${f===currentFilter?' on':''}" onclick="setFilter('${f}')">${f}</div>`).join('');
+
+  // threads
+  let threads = (THREADS[currentCat]||[]).slice();
+  if(currentFilter!=='All') threads = threads.filter(t=>t.tags.includes(currentFilter));
+  if(searchTerm) threads = threads.filter(t=>t.q.toLowerCase().includes(searchTerm));
+  if(!sortRecent) threads = threads.slice().sort((a,b)=>b.replies.length-a.replies.length);
+
+  document.getElementById('feedCount').textContent = `${threads.length} question${threads.length!==1?'s':''}`;
+
+  const html = threads.length
+    ? threads.map(t=>threadCard(t)).join('')
+    : `<div class="empty"><div class="big">💬</div><p>No questions yet in this filter. Be first!</p></div>`;
+  document.getElementById('threadList').innerHTML = html;
+}
+
+function threadCard(t){
+  const isOpen = openThread===t.id;
+  const repliesHtml = isOpen ? `
+    <div class="tc-body-wrap">
+      <div class="replies">
+        ${t.replies.map(r=>replyHtml(r)).join('')}
+        ${t.replies.length===0?'<div style="padding:.5rem 0;color:var(--light);font-size:.85rem">No replies yet — be the first!</div>':''}
+      </div>
+      ${adStrip(currentCat, t.q)}
+      <div class="add-reply">
+        <div class="r-av" style="background:var(--ink)">YOU</div>
+        <textarea rows="2" placeholder="Write a reply…" id="replyInput_${t.id}"></textarea>
+        <button onclick="postReply(${t.id})">Reply</button>
+      </div>
+    </div>` : '';
+
+  return `<div class="thread-card${isOpen?' open':''}" id="tc_${t.id}">
+    <div class="tc-head" onclick="toggleThread(${t.id})">
+      <span class="tc-cat">${t.tags[0]||''}</span>
+      <div style="flex:1">
+        <div class="tc-q">${t.q}</div>
+        <div class="tc-meta">Asked by <strong>@${t.user}</strong> · ${t.city} · ${t.time}</div>
+        <div class="tc-stats">
+          <span class="tc-stat">💬 ${t.replies.length} repl${t.replies.length===1?'y':'ies'}</span>
+          ${isOpen?'<span class="tc-stat" style="color:var(--accent)">▲ collapse</span>':'<span class="tc-stat">▼ view thread</span>'}
+        </div>
+      </div>
+    </div>
+    ${repliesHtml}
+  </div>`;
+}
+
+function replyHtml(r){
+  return `<div class="reply">
+    <div class="r-av" style="background:${av(r.user)}">${initials(r.user)}</div>
+    <div class="r-body">
+      <div class="r-name">@${r.user} <a href="#" onclick="return false">View profile →</a></div>
+      <div class="r-text">${r.text}</div>
+      <div class="r-tags">${r.tags.map(tg=>`<span class="r-tag">${tg}</span>`).join('')}</div>
+      <div class="r-actions">
+        <span class="r-action" onclick="likeReply(this)">👍 Helpful</span>
+        <span class="r-action">💬 Reply</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function adStrip(cat, question){
+  // Pick ads — if question mentions location/rehearsal, show bands ads regardless
+  let ads = ADS[cat] || ADS.music;
+  const q = question.toLowerCase();
+  if(q.includes('rehearsal')||q.includes('studio')||q.includes('pa ')) ads = ADS.bands;
+  if(q.includes('mastering')||q.includes('recording')) ads = [
+    {label:'🎙️ Recording studios nearby',url:'#'},
+    {label:'📀 Online mastering services',url:'#'},
+    {label:'🎛️ Mix feedback sessions',url:'#'},
+  ];
+  return `<div class="ad-strip">
+    <span class="ad-label">Nearby</span>
+    <div class="ad-chips">${ads.map(a=>`<a class="ad-chip" href="${a.url}">${a.label}</a>`).join('')}</div>
+    <div class="ad-note">Suggested based on this question — local and relevant, not random.</div>
+  </div>`;
+}
+
+// ── ACTIONS ──────────────────────────────────────────────────────────────
+function toggleThread(id){
+  openThread = openThread===id ? null : id;
+  renderFeed();
+  if(openThread) setTimeout(()=>{ document.getElementById('tc_'+id)?.scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
+}
+
+function setFilter(f){
+  currentFilter=f;
+  openThread=null;
+  renderFeed();
+}
+
+function toggleSortMode(){
+  sortRecent=!sortRecent;
+  document.getElementById('sortLabel').textContent=sortRecent?'Recent':'Popular';
+  renderFeed();
+}
+
+function filterSearch(v){
+  searchTerm=v.toLowerCase();
+  renderFeed();
+}
+
+function postQuestion(){
+  const input=document.getElementById('askInput');
+  const city=document.getElementById('askCity').value;
+  const q=input.value.trim();
+  if(!q){showToast('Write something first!');return;}
+  const newThread={id:nextId++,q,user:'you',city,time:'just now',tags:[FILTERS[currentCat][1]||'Questions'],replies:[]};
+  THREADS[currentCat].unshift(newThread);
+  input.value='';
+  openThread=newThread.id;
+  renderFeed();
+  showToast('Question posted! 🎉');
+}
+
+function postReply(threadId){
+  const input=document.getElementById('replyInput_'+threadId);
+  if(!input) return;
+  const text=input.value.trim();
+  if(!text){showToast('Write something first!');return;}
+  const thread=Object.values(THREADS).flat().find(t=>t.id===threadId);
+  if(thread){
+    thread.replies.push({user:'you',text,tags:[]});
+    renderFeed();
+    renderDirectory();
+    showToast('Reply posted! ✓');
+    setTimeout(()=>{ document.getElementById('tc_'+threadId)?.querySelector('.replies')?.scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
+  }
+}
+
+function likeReply(el){
+  el.style.color='var(--green)';
+  el.textContent='✓ Marked helpful';
+  el.style.pointerEvents='none';
+}
+
+// ── DIRECTORY ─────────────────────────────────────────────────────────────
+function renderDirectory(){
+  const people=DIRECTORY[currentCat]||[];
+  document.getElementById('directoryList').innerHTML=people.map(p=>`
+    <div class="profile-card">
+      <div class="pc-av" style="background:${p.color}">${initials(p.name)}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-handle">@${p.handle} · ${p.city}</div>
+      <div class="pc-skills">${p.skills.map(s=>`<span class="pc-skill">${s}</span>`).join('')}</div>
+      <div class="pc-deal">🎁 ${p.deal}</div>
+      <button class="pc-btn" onclick="showToast('Message sent to ${p.name}!')">Get in touch</button>
+      <div class="pc-ans">Answered ${p.ans} questions</div>
+    </div>`).join('');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
